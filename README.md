@@ -1,3 +1,5 @@
 # NC News Seeding
 
-- Instructions for this sprint can be found at https://l2c.northcoders.com/courses/be/seeding-nc-news
+.env.test and .env.development files need to be created, in each of them value PGDATABASE for database_name needs to be added
+
+You can use .env.\*.example as blueprints

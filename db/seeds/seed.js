@@ -1,97 +1,116 @@
 const db = require("../connection");
-const { bracketed } = require("../seeds/utils");
+const { convertTimestampToDate } = require("../seeds/utils");
+var format = require("pg-format");
 
-function dropTables() {
-  return db.query(`DROP TABLE IF EXISTS comments, articles, users, topics;`);
+const tables = [
+  {
+    name: "topics",
+    properties: [
+      { key: "slug", type: "VARCHAR(50) PRIMARY KEY" },
+      { key: "description", type: "VARCHAR(5000)" },
+      { key: "img_url", type: "VARCHAR(1000)" },
+    ],
+  },
+  {
+    name: "users",
+    properties: [
+      { key: "username", type: "VARCHAR(50) PRIMARY KEY" },
+      { key: "name", type: "VARCHAR(50)" },
+      { key: "avatar_url", type: "VARCHAR(1000)" },
+    ],
+  },
+  {
+    name: "articles",
+    properties: [
+      { key: "article_id", type: "SERIAL PRIMARY KEY" },
+      { key: "title", type: "VARCHAR(500)" },
+      {
+        key: "topic",
+        type: "VARCHAR(50) REFERENCES topics (slug) ON DELETE SET NULL",
+      },
+      {
+        key: "author",
+        type: "VARCHAR(50) REFERENCES users (username) ON DELETE CASCADE",
+      },
+      { key: "body", type: "TEXT" },
+      { key: "votes", type: "INT DEFAULT 0" },
+      { key: "article_img_url", type: "VARCHAR(1000)" },
+      { key: "created_at", type: "TIMESTAMP DEFAULT CURRENT_TIMESTAMP" },
+    ],
+  },
+  {
+    name: "comments",
+    properties: [
+      { key: "comment_id", type: "SERIAL PRIMARY KEY" },
+      {
+        key: "article_id",
+        type: "INT REFERENCES articles (article_id) ON DELETE CASCADE",
+      },
+      { key: "body", type: "TEXT" },
+      { key: "votes", type: "INT DEFAULT 0" },
+      {
+        key: "author",
+        type: "VARCHAR(50) REFERENCES users (username) ON DELETE CASCADE",
+      },
+      { key: "created_at", type: "TIMESTAMP DEFAULT CURRENT_TIMESTAMP" },
+    ],
+  },
+];
+
+async function dropTables() {
+  return await db.query(
+    `DROP TABLE IF EXISTS ${tables
+      .map((table) => table.name)
+      .reverse()
+      .join(", ")};`
+  );
 }
 
-function creareTables() {
-  return db.query(`CREATE TABLE
-    IF NOT EXISTS topics (
-        slug VARCHAR(50) PRIMARY KEY,
-        description VARCHAR(5000),
-        img_url VARCHAR(1000)
-    );
-
-CREATE TABLE
-    IF NOT EXISTS users (
-        username VARCHAR(50) PRIMARY KEY,
-        name VARCHAR(50),
-        avatar_url VARCHAR(1000)
-    );
-
-CREATE TABLE
- IF NOT EXISTS articles (
-    article_id SERIAL PRIMARY KEY,
-    title VARCHAR(500),
-    topic VARCHAR(50) REFERENCES topics (slug) ON DELETE SET NULL,
-    author VARCHAR(50) REFERENCES users (username) ON DELETE CASCADE,
-    body TEXT,
-    votes INT DEFAULT 0,
-    article_img_url VARCHAR(1000),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE
- IF NOT EXISTS comments (
-    comment_id SERIAL PRIMARY KEY,
-    article_id INT REFERENCES articles (article_id) ON DELETE CASCADE,
-    body TEXT,
-    votes INT DEFAULT 0,
-    author VARCHAR(50) REFERENCES users (username) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)`);
+async function creareTables() {
+  for (const table of tables) {
+    const properties = table.properties
+      .map((property) => [property.key, property.type].join(" "))
+      .join(",");
+    await db.query(`CREATE TABLE IF NOT EXISTS ${table.name} (${properties});`);
+  }
 }
 
-const seed = ({ topicData, userData, articleData, commentData }) => {
-  return dropTables().then(() => {
-    return creareTables().then(() => {
-      db.query(`
-        INSERT INTO topics(slug, description, img_url)
-        VALUES ${topicData
-          .map(
-            (topic) =>
-              `${bracketed(topic.slug, topic.description, topic.img_url)}`
-          )
-          .join(",")};
-          INSERT INTO users(username, name, avatar_url)
-        VALUES ${userData
-          .map(
-            (user) => `${bracketed(user.username, user.name, user.avatar_url)}`
-          )
-          .join(",")};
-          INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url)
-        VALUES ${articleData
-          .map(
-            (article) =>
-              `${bracketed(
-                article.title,
-                article.topic,
-                article.author,
-                article.body,
-                { created_at: article.created_at },
-                article.votes,
-                article.article_img_url
-              )}`
-          )
-          .join(",")};
-          INSERT INTO comments(article_id, body, votes, author, created_at)
-        VALUES ${commentData
-          .map(
-            (comment) =>
-              `${bracketed(
-                articleData.findIndex(
-                  (article) => article.title === comment.article_title
-                ) + 1,
-                comment.body,
-                comment.votes,
-                comment.author,
-                { created_at: comment.created_at }
-              )}`
-          )
-          .join(",")};
-          `);
-    });
+async function simpleInsert(table, properties, args) {
+  return await db.query(
+    format("INSERT INTO %I %s VALUES %L RETURNING *", table, properties, args)
+  );
+}
+
+async function smartInsert(data, table, conversion) {
+  const keys = table.properties
+    .filter((property) => !property.type.includes("SERIAL"))
+    .map((property) => property.key);
+  return await simpleInsert(
+    table.name,
+    `(${keys.join(", ")})`,
+    conversion
+      ? data.map((dataPoint) => keys.map((key) => conversion(dataPoint)[key]))
+      : data.map((dataPoint) => keys.map((key) => dataPoint[key]))
+  );
+}
+
+const seed = async ({ topicData, userData, articleData, commentData }) => {
+  await dropTables();
+  await creareTables();
+
+  const topics = await smartInsert(topicData, tables[0]);
+  const users = await smartInsert(userData, tables[1]);
+  const articles = await smartInsert(
+    articleData,
+    tables[2],
+    convertTimestampToDate
+  );
+  const comments = await smartInsert(commentData, tables[3], (comment) => {
+    const timeFormattedComment = convertTimestampToDate(comment);
+    timeFormattedComment.article_id = articles.rows.find(
+      (article) => article.title === timeFormattedComment.article_title
+    ).article_id;
+    return timeFormattedComment;
   });
 };
 module.exports = seed;

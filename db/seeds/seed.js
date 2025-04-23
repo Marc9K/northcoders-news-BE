@@ -58,20 +58,22 @@ const tables = [
 ];
 
 async function dropTables() {
+  const tableNamesInReverseOrder = tables.map((table) => table.name).reverse();
   return await db.query(
-    `DROP TABLE IF EXISTS ${tables
-      .map((table) => table.name)
-      .reverse()
-      .join(", ")};`
+    `DROP TABLE IF EXISTS ${tableNamesInReverseOrder.join(", ")};`
   );
 }
 
 async function creareTables() {
   for (const table of tables) {
-    const properties = table.properties
-      .map((property) => [property.key, property.type].join(" "))
-      .join(",");
-    await db.query(`CREATE TABLE IF NOT EXISTS ${table.name} (${properties});`);
+    const propertyDescriptions = table.properties.map((property) =>
+      [property.key, property.type].join(" ")
+    );
+    await db.query(
+      `CREATE TABLE IF NOT EXISTS ${table.name} (${propertyDescriptions.join(
+        ","
+      )});`
+    );
   }
 }
 
@@ -105,12 +107,20 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
     tables[2],
     convertTimestampToDate
   );
-  const comments = await smartInsert(commentData, tables[3], (comment) => {
+
+  const convertArticleToId = (comment) => {
     const timeFormattedComment = convertTimestampToDate(comment);
-    timeFormattedComment.article_id = articles.rows.find(
+    const articleWithSameTitle = articles.rows.find(
       (article) => article.title === timeFormattedComment.article_title
-    ).article_id;
+    );
+    timeFormattedComment.article_id = articleWithSameTitle.article_id;
     return timeFormattedComment;
-  });
+  };
+
+  const comments = await smartInsert(
+    commentData,
+    tables[3],
+    convertArticleToId
+  );
 };
 module.exports = seed;

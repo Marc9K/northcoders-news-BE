@@ -2,8 +2,12 @@ const endpointsJson = require("../endpoints.json");
 const request = require("supertest");
 const app = require("../controllers/app.controllers");
 const db = require("../db/connection");
+const seed = require("../db/seeds/seed");
+const testData = require("../db/data/test-data");
 
-// beforeAll(() => {});
+beforeAll(() => {
+  return seed(testData);
+});
 afterAll(() => {
   db.end();
 });

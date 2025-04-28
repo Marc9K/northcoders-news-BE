@@ -1,0 +1,8 @@
+const db = require("../db/connection");
+exports.selectComments = async (article_id) => {
+  const commentsQuery = await db.query(
+    `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
+    [article_id]
+  );
+  return commentsQuery.rows;
+};

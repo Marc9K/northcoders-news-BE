@@ -1,4 +1,7 @@
-const { selectArticle } = require("../models/articles.models");
+const {
+  selectArticle,
+  selectAllArticles,
+} = require("../models/articles.models");
 
 exports.getArticle = async (request, response, next) => {
   const { article_id } = request.params;
@@ -14,4 +17,8 @@ exports.getArticle = async (request, response, next) => {
   }
 
   return response.status(200).send({ article });
+};
+
+exports.getArticles = async (request, response, next) => {
+  return response.status(200).send({ articles: await selectAllArticles() });
 };

@@ -2,14 +2,14 @@ const express = require("express");
 const app = express();
 const apiSpecification = require("../endpoints.json");
 const { getTopics } = require("./topics.controllers");
-const { getArticle } = require("./articles.controllers");
+const { getArticle, getArticles } = require("./articles.controllers");
 
 app.get("/api", (_, response) => {
   response.status(200).send({ endpoints: apiSpecification });
 });
 
 app.get("/api/topics", getTopics);
-
+app.get("/api/articles/", getArticles);
 app.get("/api/articles/:article_id", getArticle);
 
 app.get("*splat", (req, response) => {

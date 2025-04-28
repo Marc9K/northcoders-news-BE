@@ -4,6 +4,7 @@ const app = require("../controllers/app.controllers");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
+const comments = require("../db/data/test-data/comments");
 
 beforeAll(() => {
   return seed(testData);
@@ -109,7 +110,47 @@ describe("GET /api/articles/", () => {
       return await request(app).get("/api/articles/50").expect(404);
     });
     it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
-      return await request(app).get("/api/articles/aaa").expect(422);
+      await request(app).get("/api/articles/aaa").expect(422);
+      await request(app).get("/api/articles/-1").expect(422);
+    });
+
+    describe("GET /api/articles/:article_id/comments", () => {
+      it("200: Responds with an array of type comments", async () => {
+        const {
+          body: { comments },
+        } = await request(app).get("/api/articles/1/comments");
+        expect(comments).toHaveLength(11);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+      });
+
+      it("Sorts comments in descending order by date", async () => {
+        const {
+          body: { comments },
+        } = await request(app).get("/api/articles/1/comments");
+        expect(comments).toBeSorted({ key: "created_at", descending: true });
+      });
+
+      it("404: Responds with Not found if there is no article with article_id", async () => {
+        await request(app).get("/api/articles/50/comments").expect(404);
+      });
+      it("Responds with [] if there are no comments", async () => {
+        const {
+          body: { comments },
+        } = await request(app).get("/api/articles/12/comments");
+        expect(comments).toHaveLength(0);
+      });
+      it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
+        return await request(app).get("/api/articles/aaa/comments").expect(422);
+      });
     });
   });
 });

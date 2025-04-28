@@ -3,6 +3,7 @@ const app = express();
 const apiSpecification = require("../endpoints.json");
 const { getTopics } = require("./topics.controllers");
 const { getArticle, getArticles } = require("./articles.controllers");
+const { getComments } = require("./comments.controllers");
 
 app.get("/api", (_, response) => {
   response.status(200).send({ endpoints: apiSpecification });
@@ -11,6 +12,7 @@ app.get("/api", (_, response) => {
 app.get("/api/topics", getTopics);
 app.get("/api/articles/", getArticles);
 app.get("/api/articles/:article_id", getArticle);
+app.get("/api/articles/:article_id/comments", getComments);
 
 app.get("*splat", (req, response) => {
   response.status(404).send({ msg: "This endpoint does not exist" });

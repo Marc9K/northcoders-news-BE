@@ -7,7 +7,11 @@ const {
   getArticles,
   patchArticle,
 } = require("./articles.controllers");
-const { getComments, postComment } = require("./comments.controllers");
+const {
+  getComments,
+  postComment,
+  deleteComment,
+} = require("./comments.controllers");
 
 app.use(express.json());
 
@@ -16,11 +20,14 @@ app.get("/api", (_, response) => {
 });
 
 app.get("/api/topics", getTopics);
+
 app.get("/api/articles/", getArticles);
 app.get("/api/articles/:article_id", getArticle);
 app.patch("/api/articles/:article_id", patchArticle);
 app.get("/api/articles/:article_id/comments", getComments);
 app.post("/api/articles/:article_id/comments", postComment);
+
+app.delete("/api/comments/:comment_id", deleteComment);
 
 app.get("/api/*splat", (req, response) => {
   response.status(404).send({ msg: "This endpoint does not exist" });

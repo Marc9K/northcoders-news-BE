@@ -1,4 +1,8 @@
-const { selectComments, insertComment } = require("../models/comments.models");
+const {
+  selectComments,
+  insertComment,
+  deleteComment,
+} = require("../models/comments.models");
 const { selectArticle } = require("../models/articles.models");
 
 exports.getComments = async (request, response, next) => {
@@ -38,6 +42,25 @@ exports.postComment = async (request, response, next) => {
     switch (code) {
       case "23503":
         next({ status: 404, msg: `User ${request.body.username} not found` });
+        break;
+      default:
+        next();
+        break;
+    }
+  }
+};
+
+exports.deleteComment = async (request, response, next) => {
+  try {
+    const comment = await deleteComment(request.params.comment_id);
+    if (!comment) {
+      return next({ status: 404, msg: "Comment not found" });
+    }
+    response.status(204).send();
+  } catch ({ code }) {
+    switch (code) {
+      case "22P02":
+        next({ status: 422, msg: "Not valid comment_id" });
         break;
       default:
         next();

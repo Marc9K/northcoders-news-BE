@@ -13,7 +13,7 @@ afterAll(() => {
   db.end();
 });
 
-describe("404: For non existant api enpoints", () => {
+describe("404: For non existent api enpoints", () => {
   test("/api/anything", async () => {
     const {
       body: { msg },

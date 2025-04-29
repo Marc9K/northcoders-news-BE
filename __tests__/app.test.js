@@ -6,7 +6,7 @@ const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
 const comments = require("../db/data/test-data/comments");
 
-beforeAll(() => {
+beforeEach(() => {
   return seed(testData);
 });
 afterAll(() => {
@@ -161,8 +161,89 @@ describe("GET /api/articles/", () => {
         } = await request(app).get("/api/articles/12/comments");
         expect(comments).toHaveLength(0);
       });
-      it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
+      it("422: Responds with Unprocessable Entity for invalid article_id", async () => {
         return await request(app).get("/api/articles/aaa/comments").expect(422);
+      });
+    });
+    describe.only("POST /api/articles/:article_id/comments", () => {
+      it("201: Responds with the posted comment", async () => {
+        const commentToPost = {
+          username: "butter_bridge",
+          body: "Comment body",
+        };
+        const {
+          body: { comment },
+        } = await request(app)
+          .post("/api/articles/1/comments")
+          .send(commentToPost)
+          .expect(201);
+        expect(comment).toMatchObject({
+          author: commentToPost.username,
+          body: commentToPost.body,
+          created_at: expect.any(String),
+          votes: 0,
+          article_id: expect.any(Number),
+          comment_id: expect.any(Number),
+        });
+      });
+      it("Inserts posted comment into the database", async () => {
+        const commentToPost = {
+          username: "butter_bridge",
+          body: "Comment body",
+        };
+        await request(app).post("/api/articles/1/comments").send(commentToPost);
+        const {
+          body: { comments },
+        } = await request(app).get("/api/articles/1/comments");
+        expect(
+          comments.some(
+            (comment) =>
+              comment.body === commentToPost.body &&
+              comment.author == commentToPost.username
+          )
+        ).toBe(true);
+      });
+      it("404: Responds with Not found if there is no article with article_id", async () => {
+        const commentToPost = {
+          username: "butter_bridge",
+          body: "Comment body",
+        };
+        await request(app)
+          .post("/api/articles/50/comments")
+          .send(commentToPost)
+          .expect(404);
+      });
+      it("404: Responds with Not found if there is no user with username", async () => {
+        const commentToPost = { username: "User", body: "Comment body" };
+        const {
+          body: { msg },
+        } = await request(app)
+          .post("/api/articles/1/comments")
+          .send(commentToPost)
+          .expect(404);
+        expect(msg).toBe(`User ${commentToPost.username} not found`);
+      });
+      describe("422: Responds with Unprocessable Entity for invalid comment", () => {
+        it("has no body", async () => {
+          const commentToPost = { username: "butter_bridge" };
+          await request(app)
+            .post("/api/articles/1/comments")
+            .send(commentToPost)
+            .expect(422);
+        });
+        it("has no username", async () => {
+          const commentToPost = { body: "Comment body" };
+          await request(app)
+            .post("/api/articles/1/comments")
+            .send(commentToPost)
+            .expect(422);
+        });
+        it("is an empty object", async () => {
+          await request(app)
+            .post("/api/articles/1/comments")
+            .send({})
+            .expect(422);
+        });
       });
     });
   });

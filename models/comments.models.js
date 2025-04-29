@@ -14,3 +14,11 @@ exports.insertComment = async (article_id, username, body) => {
   );
   return commentQuery.rows[0];
 };
+
+exports.deleteComment = async (comment_id) => {
+  const commentQuery = await db.query(
+    `DELETE FROM comments WHERE comment_id = $1 RETURNING *`,
+    [comment_id]
+  );
+  return commentQuery.rows[0];
+};

@@ -13,6 +13,8 @@ const {
   deleteComment,
 } = require("./comments.controllers");
 
+const { getAllUsers } = require("./users.controllers");
+
 app.use(express.json());
 
 app.get("/api", (_, response) => {
@@ -28,6 +30,8 @@ app.get("/api/articles/:article_id/comments", getComments);
 app.post("/api/articles/:article_id/comments", postComment);
 
 app.delete("/api/comments/:comment_id", deleteComment);
+
+app.get("/api/users", getAllUsers);
 
 app.get("/api/*splat", (req, response) => {
   response.status(404).send({ msg: "This endpoint does not exist" });

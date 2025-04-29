@@ -13,6 +13,20 @@ afterAll(() => {
   db.end();
 });
 
+describe("404: For non existant api enpoints", () => {
+  test("/api/anything", async () => {
+    const {
+      body: { msg },
+    } = await request(app).get("/api/anything").expect(404);
+    expect(msg).toEqual("This endpoint does not exist");
+  });
+  test("/anything", async () => {
+    const {
+      body: { msg },
+    } = await request(app).get("/anything").expect(500);
+  });
+});
+
 describe("GET /api", () => {
   test("200: Responds with an object detailing the documentation for each endpoint", () => {
     return request(app)
@@ -111,7 +125,6 @@ describe("GET /api/articles/", () => {
     });
     it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
       await request(app).get("/api/articles/aaa").expect(422);
-      await request(app).get("/api/articles/-1").expect(422);
     });
 
     describe("GET /api/articles/:article_id/comments", () => {

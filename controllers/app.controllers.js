@@ -14,7 +14,7 @@ app.get("/api/articles/", getArticles);
 app.get("/api/articles/:article_id", getArticle);
 app.get("/api/articles/:article_id/comments", getComments);
 
-app.get("*splat", (req, response) => {
+app.get("/api/*splat", (req, response) => {
   response.status(404).send({ msg: "This endpoint does not exist" });
 });
 

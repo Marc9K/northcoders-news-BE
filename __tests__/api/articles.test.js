@@ -4,6 +4,7 @@ const testData = require("../../db/data/test-data");
 
 const request = require("supertest");
 const app = require("../../controllers/app.controllers");
+const comments = require("../../db/data/test-data/comments");
 
 beforeEach(() => {
   return seed(testData);
@@ -155,6 +156,24 @@ describe("/api/articles/:article_id", () => {
         created_at: expect.any(String),
         votes: expect.any(Number),
         article_img_url: expect.any(String),
+        comment_count: expect.any(Number),
+      });
+    });
+    it("Responds with the correct object from test database", async () => {
+      const {
+        body: { article },
+      } = await request(app).get("/api/articles/6");
+      expect(article).toEqual({
+        article_id: 6,
+        title: "A",
+        topic: "mitch",
+        author: "icellusedkars",
+        body: "Delicious tin of cat food",
+        created_at: "2020-10-18T01:00:00.000Z",
+        votes: 0,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        comment_count: 1,
       });
     });
     it("Responds with the correct object from test database", async () => {
@@ -171,6 +190,7 @@ describe("/api/articles/:article_id", () => {
         votes: 0,
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        comment_count: 0,
       });
     });
     it("404: Responds with Not found for non existant article", async () => {
@@ -297,7 +317,7 @@ describe("/api/articles/:article_id/comments", () => {
         created_at: expect.any(String),
         votes: 0,
         article_id: expect.any(Number),
-        comment_id: expect.any(Number),
+        comment_id: 19,
       });
     });
     it("Inserts posted comment into the database", async () => {

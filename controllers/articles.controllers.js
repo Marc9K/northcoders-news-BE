@@ -27,7 +27,17 @@ exports.getArticle = async (request, response, next) => {
 };
 
 exports.getArticles = async (request, response, next) => {
-  return response.status(200).send({ articles: await selectAllArticles() });
+  try {
+    const articles = await selectAllArticles(
+      request.query.sort_by,
+      request.query.order
+    );
+    return response.status(200).send({
+      articles,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 exports.patchArticle = async (request, response, next) => {

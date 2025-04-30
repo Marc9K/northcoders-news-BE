@@ -7,7 +7,24 @@ exports.selectArticle = async (article_id) => {
   return articlesWithIdQuery.rows[0];
 };
 
-exports.selectAllArticles = async () => {
+exports.selectAllArticles = async (sortByColumn, order) => {
+  let sqlOrder = "DESC";
+  if (order && order.toLowerCase() === "asc") {
+    sqlOrder = "ASC";
+  }
+  let sqlSortByColumn = "created_at";
+  if (
+    [
+      "article_id",
+      "title",
+      "topic",
+      "author",
+      "votes",
+      "article_img_url",
+    ].includes(sortByColumn)
+  ) {
+    sqlSortByColumn = sortByColumn;
+  }
   const articlesQuery = await db.query(
     `SELECT 
       articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, 
@@ -15,7 +32,7 @@ exports.selectAllArticles = async () => {
       FROM articles 
       LEFT JOIN comments ON articles.article_id = comments.article_id 
       GROUP BY articles.article_id 
-      ORDER BY articles.created_at DESC`
+      ORDER BY ${sqlSortByColumn} ${sqlOrder}`
   );
   return articlesQuery.rows;
 };

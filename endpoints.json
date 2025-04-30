@@ -21,6 +21,11 @@
         "key": "order",
         "value": "asc or desc for ascending or descending",
         "default": "desc"
+      },
+      {
+        "key": "topic",
+        "value": "topic to filter articles by",
+        "default": null
       }
     ],
     "exampleResponse": {

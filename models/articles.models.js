@@ -3,7 +3,20 @@ const { selectTopic } = require("./topics.models.js");
 
 exports.selectArticle = async (article_id) => {
   const articlesWithIdQuery = await db.query(
-    `SELECT * FROM articles WHERE article_id = $1`,
+    `SELECT 
+    articles.author,
+    articles.body,
+    articles.title,
+    articles.article_id,
+    articles.topic,
+    articles.created_at,
+    articles.votes,
+    article_img_url,
+    CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    WHERE articles.article_id = $1
+    GROUP BY articles.article_id`,
     [article_id]
   );
   return articlesWithIdQuery.rows[0];

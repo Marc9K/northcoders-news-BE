@@ -32,8 +32,8 @@ describe("/api/comments/", () => {
     it("404: Responds with Not found if no such comment ever existed", async () => {
       await request(app).delete("/api/comments/200").expect(404);
     });
-    it("422: Responds with Invalid input if comment_id is invalid", async () => {
-      await request(app).delete("/api/comments/aaa").expect(422);
+    it("400: Responds with Invalid input if comment_id is invalid", async () => {
+      await request(app).delete("/api/comments/aaa").expect(400);
     });
   });
 });

@@ -14,10 +14,7 @@ exports.getComments = async (request, response, next) => {
     const comments = await selectComments(request.params.article_id);
     response.status(200).send({ comments });
   } catch (error) {
-    if (error.code === "22P02") {
-      return next({ status: 422, msg: "Not valid article_id" });
-    }
-    next();
+    next(error);
   }
 };
 
@@ -38,15 +35,8 @@ exports.postComment = async (request, response, next) => {
     );
 
     response.status(201).send({ comment: insertedComment });
-  } catch ({ code }) {
-    switch (code) {
-      case "23503":
-        next({ status: 404, msg: `User ${request.body.username} not found` });
-        break;
-      default:
-        next();
-        break;
-    }
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -57,14 +47,7 @@ exports.deleteComment = async (request, response, next) => {
       return next({ status: 404, msg: "Comment not found" });
     }
     response.status(204).send();
-  } catch ({ code }) {
-    switch (code) {
-      case "22P02":
-        next({ status: 422, msg: "Not valid comment_id" });
-        break;
-      default:
-        next();
-        break;
-    }
+  } catch (error) {
+    next(error);
   }
 };

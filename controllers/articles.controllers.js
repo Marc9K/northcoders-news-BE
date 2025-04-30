@@ -15,14 +15,8 @@ exports.getArticle = async (request, response, next) => {
     }
 
     return response.status(200).send({ article });
-  } catch ({ code }) {
-    switch (code) {
-      case "22P02":
-        next({ status: 422, msg: "Not valid article_id" });
-        break;
-      default:
-        next();
-    }
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -50,15 +44,7 @@ exports.patchArticle = async (request, response, next) => {
       return next({ status: 404, msg: "Article not found" });
     }
     response.status(200).send({ article });
-  } catch ({ code }) {
-    switch (code) {
-      case "22P02":
-        next({ status: 422, msg: "Not valid article_id" });
-        break;
-
-      default:
-        next();
-        break;
-    }
+  } catch (error) {
+    next(error);
   }
 };

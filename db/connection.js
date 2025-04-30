@@ -14,9 +14,9 @@ if (ENV === "production") {
   config.max = 2;
 }
 
-const db = new Pool();
+const db = new Pool(config);
 
-if (!process.env.PGDATABASE) {
+if (ENV !== "production" && !process.env.PGDATABASE) {
   throw new Error("No PGDATABASE configured");
 } else {
   console.log(`Connected to ${process.env.PGDATABASE}`);

@@ -47,6 +47,79 @@ describe("/api/articles/", () => {
         expect(article).not.toHaveProperty("body");
       });
     });
+    describe("queries", () => {
+      describe("sort_by", () => {
+        it("Responds with sorted by created_at in descending order articles by default", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles/");
+          const result = await request(app).get("/api/articles/");
+          expect(articles).toBeSorted({
+            key: "created_at",
+            descending: true,
+          });
+        });
+        it("Responds with sorted by created_at articles when the column does not exist", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?sort_by=aaaa");
+          expect(articles).toBeSorted({
+            key: "created_at",
+            descending: true,
+          });
+        });
+        it("Responds with sorted by any column articles on query", async () => {
+          await Promise.all(
+            [
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "votes",
+              "article_img_url",
+              "created_at",
+            ].map((column) => {
+              const promise = async () => {
+                const {
+                  body: { articles },
+                } = await request(app).get(`/api/articles?sort_by=${column}`);
+                expect(articles).toBeSorted({ key: column, descending: true });
+              };
+              return promise();
+            })
+          );
+        });
+      });
+      describe("order", () => {
+        it("Responds with sorted in descending order articles with invalid option", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?order=aaaa");
+          expect(articles).toBeSorted({
+            key: "created_at",
+            descending: true,
+          });
+        });
+        it("Responds with sorted in descending order articles on query", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?order=desc");
+          expect(articles).toBeSorted({
+            key: "created_at",
+            descending: true,
+          });
+        });
+        it("Responds with sorted in ascending order articles on query", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?order=asc");
+          expect(articles).toBeSorted({
+            key: "created_at",
+            descending: false,
+          });
+        });
+      });
+    });
   });
 });
 describe("/api/articles/:article_id", () => {

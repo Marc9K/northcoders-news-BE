@@ -119,6 +119,24 @@ describe("/api/articles/", () => {
           });
         });
       });
+      describe("topic", () => {
+        test("Responds with articles of specified topic if exists ", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?topic=cats");
+          expect(articles).toHaveLength(1);
+          expect(articles[0].topic).toBe("cats");
+        });
+        test("Responds with empty array if no artclis exist for the topic", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles?topic=paper");
+          expect(articles).toHaveLength(0);
+        });
+        test("404: Responds with Not found if topic does not exist", async () => {
+          await request(app).get("/api/articles?topic=aaa").expect(404);
+        });
+      });
     });
   });
 });

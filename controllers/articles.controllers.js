@@ -24,13 +24,14 @@ exports.getArticles = async (request, response, next) => {
   try {
     const articles = await selectAllArticles(
       request.query.sort_by,
-      request.query.order
+      request.query.order,
+      request.query.topic
     );
     return response.status(200).send({
       articles,
     });
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 

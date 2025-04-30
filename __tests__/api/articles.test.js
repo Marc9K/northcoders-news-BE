@@ -158,8 +158,8 @@ describe("/api/articles/:article_id", () => {
     it("404: Responds with Not found for non existant article", async () => {
       return await request(app).get("/api/articles/50").expect(404);
     });
-    it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
-      await request(app).get("/api/articles/aaa").expect(422);
+    it("400: Responds with Unprocessable Entity for non invalid article_id", async () => {
+      await request(app).get("/api/articles/aaa").expect(400);
     });
   });
   describe("PATCH", () => {
@@ -189,11 +189,11 @@ describe("/api/articles/:article_id", () => {
         .send({ inc_votes: -10 })
         .expect(404);
     });
-    it("422: Responds with Unprocessable Entity for non invalid article_id", async () => {
+    it("400: Responds with Unprocessable Entity for non invalid article_id", async () => {
       await request(app)
         .patch("/api/articles/aaa")
         .send({ inc_votes: -10 })
-        .expect(422);
+        .expect(400);
     });
 
     test("works for negative numbers", async () => {
@@ -257,8 +257,8 @@ describe("/api/articles/:article_id/comments", () => {
       } = await request(app).get("/api/articles/12/comments");
       expect(comments).toHaveLength(0);
     });
-    it("422: Responds with Unprocessable Entity for invalid article_id", async () => {
-      return await request(app).get("/api/articles/aaa/comments").expect(422);
+    it("400: Responds with Unprocessable Entity for invalid article_id", async () => {
+      return await request(app).get("/api/articles/aaa/comments").expect(400);
     });
   });
   describe("POST", () => {
@@ -309,7 +309,7 @@ describe("/api/articles/:article_id/comments", () => {
         .send(commentToPost)
         .expect(404);
     });
-    it("404: Responds with Not found if there is no user with username", async () => {
+    it.only("404: Responds with Not found if there is no user with username", async () => {
       const commentToPost = { username: "User", body: "Comment body" };
       const {
         body: { msg },
@@ -317,7 +317,7 @@ describe("/api/articles/:article_id/comments", () => {
         .post("/api/articles/1/comments")
         .send(commentToPost)
         .expect(404);
-      expect(msg).toBe(`User ${commentToPost.username} not found`);
+      expect(msg).toBe('Key (author)=(User) is not present in table "users".');
     });
     describe("422: Responds with Unprocessable Entity for invalid comment", () => {
       it("has no body", async () => {

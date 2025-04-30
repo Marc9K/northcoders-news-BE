@@ -11,6 +11,18 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
+    "queries": [
+      {
+        "key": "sort_by",
+        "value": "any valid column",
+        "default": "created_at"
+      },
+      {
+        "key": "order",
+        "value": "asc or desc for ascending or descending",
+        "default": "desc"
+      }
+    ],
     "exampleResponse": {
       "articles": [
         {

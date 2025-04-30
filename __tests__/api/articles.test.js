@@ -309,7 +309,7 @@ describe("/api/articles/:article_id/comments", () => {
         .send(commentToPost)
         .expect(404);
     });
-    it.only("404: Responds with Not found if there is no user with username", async () => {
+    it("404: Responds with Not found if there is no user with username", async () => {
       const commentToPost = { username: "User", body: "Comment body" };
       const {
         body: { msg },

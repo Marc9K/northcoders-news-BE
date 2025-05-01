@@ -22,3 +22,15 @@ exports.deleteComment = async (comment_id) => {
   );
   return commentQuery.rows[0];
 };
+
+exports.patchComment = async (comment_id, votesToAdd) => {
+  const commentQuery = await db.query(
+    `UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *`,
+    [votesToAdd, comment_id]
+  );
+  const patchedComment = commentQuery.rows[0];
+  if (!patchedComment) {
+    return Promise.reject({ status: 404, msg: "Comment not found" });
+  }
+  return patchedComment;
+};

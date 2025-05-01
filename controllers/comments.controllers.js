@@ -2,6 +2,7 @@ const {
   selectComments,
   insertComment,
   deleteComment,
+  patchComment,
 } = require("../models/comments.models");
 const { selectArticle } = require("../models/articles.models");
 
@@ -47,6 +48,19 @@ exports.deleteComment = async (request, response, next) => {
       return next({ status: 404, msg: "Comment not found" });
     }
     response.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.patchComment = async (request, response, next) => {
+  try {
+    const votesToAdd = request.body.inc_votes;
+    if (!votesToAdd) {
+      return next({ status: 400, msg: "Missing required fields" });
+    }
+    const comment = await patchComment(request.params.comment_id, votesToAdd);
+    response.status(200).send({ comment });
   } catch (error) {
     next(error);
   }

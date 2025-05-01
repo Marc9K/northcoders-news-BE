@@ -70,7 +70,6 @@
       }
     }
   },
-
   "GET /api/articles/:article_id/comments": {
     "description": "serves comments for the article with article_id",
     "exampleResponse": {
@@ -117,6 +116,16 @@
           "avatar_url": "online.com/image.png"
         }
       ]
+    }
+  },
+  "GET /api/users/:username": {
+    "description": "serves all the users",
+    "exampleResponse": {
+      "user": {
+        "username": "leopal",
+        "name": "Leo",
+        "avatar_url": "online.com/image.png"
+      }
     }
   }
 }

@@ -69,3 +69,20 @@ exports.updateArticle = async (article_id, inc_votes) => {
   );
   return articleQuery.rows[0];
 };
+
+exports.insertArticle = async ({
+  title,
+  topic,
+  author,
+  body,
+  article_img_url = "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+}) => {
+  const articleInsertQuery = await db.query(
+    `INSERT INTO articles (title, topic, author, body, article_img_url) VALUES ($1, $2, $3, $4, $5) RETURNING article_id;`,
+    [title, topic, author, body, article_img_url]
+  );
+  const article = await exports.selectArticle(
+    articleInsertQuery.rows[0].article_id
+  );
+  return article;
+};

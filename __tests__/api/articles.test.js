@@ -140,6 +140,91 @@ describe("/api/articles/", () => {
       });
     });
   });
+  describe.only("POST", () => {
+    test("200: Responds with an article", async () => {
+      const articleToPost = {
+        title: "Seafood substitutions are increasing",
+        topic: "cats",
+        author: "rogersop",
+        body: "Wow",
+        article_img_url: "https://l2c.northcoders.com/courses",
+      };
+      const {
+        body: { article },
+      } = await request(app)
+        .post("/api/articles/")
+        .send(articleToPost)
+        .expect(200);
+      expect(article).toMatchObject({
+        article_id: expect.any(Number),
+        title: expect.any(String),
+        topic: expect.any(String),
+        author: expect.any(String),
+        body: expect.any(String),
+        article_img_url: expect.any(String),
+        created_at: expect.any(String),
+        votes: expect.any(Number),
+        comment_count: expect.any(Number),
+      });
+    });
+
+    test("Responds with the posted article", async () => {
+      const articleToPost = {
+        title: "Seafood substitutions are increasing",
+        topic: "cats",
+        author: "rogersop",
+        body: "Wow",
+        article_img_url: "https://l2c.northcoders.com/courses",
+      };
+      const {
+        body: { article },
+      } = await request(app)
+        .post("/api/articles/")
+        .send(articleToPost)
+        .expect(200);
+      expect(article).toMatchObject({
+        ...articleToPost,
+        created_at: expect.any(String),
+        votes: 0,
+        comment_count: 0,
+      });
+    });
+    test("Defaults img_url in case it's not passed", async () => {
+      const articleToPost = {
+        title: "Seafood substitutions are increasing",
+        topic: "cats",
+        author: "rogersop",
+        body: "Wow",
+      };
+      const {
+        body: { article },
+      } = await request(app).post("/api/articles/").send(articleToPost);
+      expect(article.article_img_url).toEqual(
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+      );
+    });
+
+    test("404: Responds with not found when author with username does not exist", async () => {
+      const articleToPost = {
+        title: "Seafood substitutions are increasing",
+        topic: "cats",
+        author: "not_an_author",
+        body: "Wow",
+        article_img_url: "https://l2c.northcoders.com/courses",
+      };
+      await request(app).post("/api/articles/").send(articleToPost).expect(404);
+    });
+    test("404: Responds with not found when topic does not exist", async () => {
+      const articleToPost = {
+        title: "Seafood substitutions are increasing",
+        topic: "not_a_topic",
+        author: "rogersop",
+        body: "Wow",
+        article_img_url: "https://l2c.northcoders.com/courses",
+      };
+      await request(app).post("/api/articles/").send(articleToPost).expect(404);
+    });
+  });
 });
 describe("/api/articles/:article_id", () => {
   describe("GET ", () => {

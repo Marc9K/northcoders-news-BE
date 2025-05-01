@@ -4,7 +4,7 @@ const apiSpecification = require("../../endpoints.json");
 const { getTopics } = require("../topics.controllers");
 const { deleteComment } = require("../comments.controllers");
 
-const { getAllUsers } = require("../users.controllers");
+const { getAllUsers, getUser } = require("../users.controllers");
 
 const articlesRouter = require("../routers/articles");
 
@@ -19,6 +19,7 @@ apiRouter.use("/articles", articlesRouter);
 apiRouter.delete("/comments/:comment_id", deleteComment);
 
 apiRouter.get("/users", getAllUsers);
+apiRouter.get("/users/:username", getUser);
 
 apiRouter.get("/*splat", (req, response) => {
   response.status(404).send({ msg: "This endpoint does not exist" });

@@ -2,6 +2,7 @@ const {
   selectArticle,
   selectAllArticles,
   updateArticle,
+  insertArticle,
 } = require("../models/articles.models");
 
 exports.getArticle = async (request, response, next) => {
@@ -44,6 +45,16 @@ exports.patchArticle = async (request, response, next) => {
     if (!article) {
       return next({ status: 404, msg: "Article not found" });
     }
+    response.status(200).send({ article });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.postArticle = async (request, response, next) => {
+  try {
+    const articleToPost = request.body;
+    const article = await insertArticle(articleToPost);
     response.status(200).send({ article });
   } catch (error) {
     next(error);

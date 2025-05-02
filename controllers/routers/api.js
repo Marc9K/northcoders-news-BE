@@ -1,20 +1,18 @@
 const apiRouter = require("express").Router();
 
 const apiSpecification = require("../../endpoints.json");
-const { getTopics } = require("../topics.controllers");
-const { deleteComment } = require("../comments.controllers");
 
 const { getAllUsers, getUser } = require("../users.controllers");
 
 const articlesRouter = require("../routers/articles");
 const commentsRouter = require("../routers/comments");
+const topicsRouter = require("../routers/topics");
 
 apiRouter.get("/", (_, response) => {
   response.status(200).send({ endpoints: apiSpecification });
 });
 
-apiRouter.get("/topics", getTopics);
-
+apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/articles", articlesRouter);
 apiRouter.use("/comments", commentsRouter);
 

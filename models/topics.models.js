@@ -12,3 +12,11 @@ exports.selectTopic = async (topic) => {
   );
   return result.rows[0];
 };
+
+exports.insertTopic = async ({ slug, description }) => {
+  const insertionResult = await db.query(
+    "INSERT INTO topics (slug, description) VALUES ($1, $2) RETURNING *;",
+    [slug, description]
+  );
+  return insertionResult.rows[0];
+};

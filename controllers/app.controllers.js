@@ -19,6 +19,10 @@ app.use((error, req, response, next) => {
   switch (error.code) {
     case "23503":
       return response.status(404).send({ msg: error.detail });
+    case "23502":
+      return response.status(400).send({ msg: error.detail });
+    case "23505":
+      return response.status(409).send({ msg: error.detail });
     case "22P02":
       return response.status(400).send({ msg: "Bad request" });
     case "2201X":

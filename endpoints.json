@@ -99,6 +99,9 @@
       }
     }
   },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes an article with article_id if exists"
+  },
   "PATCH /api/articles/:article_id": {
     "description": "increment article with article_id votes if exists",
     "exampleRequest": {

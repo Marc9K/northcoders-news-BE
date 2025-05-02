@@ -396,6 +396,14 @@ describe("/api/articles/:article_id", () => {
       expect(votes).toBe(100);
     });
   });
+  describe("DELETE", () => {
+    test("204: Responds with No content on success", async () => {
+      await request(app).delete("/api/articles/1").expect(204);
+    });
+    test("404: Responds with Not found when deleting nonexistent article_id", async () => {
+      await request(app).delete("/api/articles/100").expect(404);
+    });
+  });
 });
 describe("/api/articles/:article_id/comments", () => {
   describe("GET", () => {

@@ -105,3 +105,14 @@ exports.insertArticle = async ({
   );
   return article;
 };
+
+exports.deleteArticle = async (article_id) => {
+  const articleQuery = await db.query(
+    `DELETE FROM articles WHERE article_id = $1 RETURNING *`,
+    [article_id]
+  );
+  if (articleQuery.rows.length === 0) {
+    return Promise.reject({ status: 404, msg: "Article not found" });
+  }
+  return articleQuery.rows[0];
+};

@@ -54,7 +54,7 @@ describe("/api/articles/", () => {
           const {
             body: { articles },
           } = await request(app).get("/api/articles/");
-          const result = await request(app).get("/api/articles/");
+          const result = await request(app).get("/api/articles/").expect(200);
           expect(articles).toBeSorted({
             key: "created_at",
             descending: true,
@@ -63,31 +63,29 @@ describe("/api/articles/", () => {
         it("Responds with sorted by created_at articles when the column does not exist", async () => {
           const {
             body: { articles },
-          } = await request(app).get("/api/articles?sort_by=aaaa");
-          expect(articles).toBeSorted({
-            key: "created_at",
-            descending: true,
-          });
+          } = await request(app).get("/api/articles?sort_by=aaaa").expect(400);
         });
         it("Responds with sorted by any column articles on query", async () => {
+          const columns = [
+            "article_id",
+            "title",
+            "topic",
+            "author",
+            "votes",
+            "article_img_url",
+            "created_at",
+          ];
+
+          async function expectToBeSortedBy(column) {
+            const {
+              body: { articles },
+            } = await request(app)
+              .get(`/api/articles?sort_by=${column}`)
+              .expect(200);
+            expect(articles).toBeSorted({ key: column, descending: true });
+          }
           await Promise.all(
-            [
-              "article_id",
-              "title",
-              "topic",
-              "author",
-              "votes",
-              "article_img_url",
-              "created_at",
-            ].map((column) => {
-              const promise = async () => {
-                const {
-                  body: { articles },
-                } = await request(app).get(`/api/articles?sort_by=${column}`);
-                expect(articles).toBeSorted({ key: column, descending: true });
-              };
-              return promise();
-            })
+            columns.map((column) => expectToBeSortedBy(column))
           );
         });
       });
@@ -95,16 +93,12 @@ describe("/api/articles/", () => {
         it("Responds with sorted in descending order articles with invalid option", async () => {
           const {
             body: { articles },
-          } = await request(app).get("/api/articles?order=aaaa");
-          expect(articles).toBeSorted({
-            key: "created_at",
-            descending: true,
-          });
+          } = await request(app).get("/api/articles?order=aaaa").expect(400);
         });
         it("Responds with sorted in descending order articles on query", async () => {
           const {
             body: { articles },
-          } = await request(app).get("/api/articles?order=desc");
+          } = await request(app).get("/api/articles?order=desc").expect(200);
           expect(articles).toBeSorted({
             key: "created_at",
             descending: true,
@@ -113,7 +107,7 @@ describe("/api/articles/", () => {
         it("Responds with sorted in ascending order articles on query", async () => {
           const {
             body: { articles },
-          } = await request(app).get("/api/articles?order=asc");
+          } = await request(app).get("/api/articles?order=asc").expect(200);
           expect(articles).toBeSorted({
             key: "created_at",
             descending: false,

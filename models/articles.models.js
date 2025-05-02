@@ -27,18 +27,22 @@ exports.selectAllArticles = async (sortByColumn, order, topic) => {
   if (order && order.toLowerCase() === "asc") {
     sqlOrder = "ASC";
   }
-  let sqlSortByColumn = "created_at";
   if (
-    [
-      "article_id",
-      "title",
-      "topic",
-      "author",
-      "votes",
-      "article_img_url",
-    ].includes(sortByColumn)
+    (sortByColumn &&
+      ![
+        "article_id",
+        "title",
+        "topic",
+        "author",
+        "votes",
+        "article_img_url",
+        "created_at",
+      ].includes(sortByColumn)) ||
+    (order && !["DESC", "ASC"].includes(order.toUpperCase()))
   ) {
-    sqlSortByColumn = sortByColumn;
+    return Promise.reject({ status: 400, msg: "Invalid sort query" });
+  } else if (!sortByColumn) {
+    sortByColumn = "created_at";
   }
   let sqlArgs = [];
   let sqlQuery = `SELECT 
@@ -56,9 +60,10 @@ exports.selectAllArticles = async (sortByColumn, order, topic) => {
     sqlArgs.push(topic);
   }
   sqlQuery += `GROUP BY articles.article_id 
-      ORDER BY ${sqlSortByColumn} ${sqlOrder};`;
+      ORDER BY ${sortByColumn} ${sqlOrder};`;
 
   const articlesQuery = await db.query(sqlQuery, sqlArgs);
+
   return articlesQuery.rows;
 };
 

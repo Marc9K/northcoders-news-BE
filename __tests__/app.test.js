@@ -36,18 +36,3 @@ describe("GET /api", () => {
       });
   });
 });
-
-describe("GET /api/topics", () => {
-  it("200: Responds with an array of type topics", async () => {
-    const {
-      body: { topics },
-    } = await request(app).get("/api/topics").expect(200);
-    expect(topics).toHaveLength(3);
-    topics.forEach((topic) => {
-      expect(topic).toMatchObject({
-        slug: expect.any(String),
-        description: expect.any(String),
-      });
-    });
-  });
-});

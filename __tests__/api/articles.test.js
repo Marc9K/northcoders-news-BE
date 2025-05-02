@@ -133,7 +133,7 @@ describe("/api/articles/", () => {
         });
       });
       describe("pagination", () => {
-        test("returns 10 by default", async () => {
+        test("Responds with 10 by default", async () => {
           const {
             body: { articles },
           } = await request(app).get("/api/articles/");
@@ -146,7 +146,7 @@ describe("/api/articles/", () => {
           } = await request(app).get(`/api/articles?limit=${limit}`);
           expect(articles).toHaveLength(limit);
         });
-        test("Responds with a;; the articles if limit is higher than total_count", async () => {
+        test("Responds with all the articles if limit is higher than total_count", async () => {
           const limit = 50;
           const {
             body: { articles },
@@ -403,7 +403,7 @@ describe("/api/articles/:article_id/comments", () => {
       const {
         body: { comments },
       } = await request(app).get("/api/articles/1/comments");
-      expect(comments).toHaveLength(11);
+      expect(comments).toHaveLength(10);
       comments.forEach((comment) => {
         expect(comment).toMatchObject({
           comment_id: expect.any(Number),
@@ -434,6 +434,59 @@ describe("/api/articles/:article_id/comments", () => {
     });
     it("400: Responds with Unprocessable Entity for invalid article_id", async () => {
       return await request(app).get("/api/articles/aaa/comments").expect(400);
+    });
+    describe("queries", () => {
+      describe("pagination", () => {
+        test("Responds with 10 comments by default", async () => {
+          const {
+            body: { comments },
+          } = await request(app).get("/api/articles/1/comments");
+          expect(comments).toHaveLength(10);
+        });
+        test("Responds with the set limit amount ", async () => {
+          const {
+            body: { comments },
+          } = await request(app).get("/api/articles/1/comments?limit=5");
+          expect(comments).toHaveLength(5);
+        });
+        test("Responds with all the comments if limit is higher than total_count", async () => {
+          const {
+            body: { comments },
+          } = await request(app).get("/api/articles/1/comments?limit=500");
+          expect(comments).toHaveLength(11);
+        });
+        test("Respons with the total_count", async () => {
+          const { body } = await request(app).get(
+            "/api/articles/1/comments?limit=5"
+          );
+          expect(body).toMatchObject({ total_count: expect.any(Number) });
+        });
+        test("Responds with the set page and default 10 limit", async () => {
+          const page = 2;
+          const {
+            body: { comments },
+          } = await request(app).get(`/api/articles/1/comments?p=${page}`);
+          expect(comments[0].body).toEqual("Superficially charming");
+        });
+        test("Responds with the set page and custom limit", async () => {
+          const page = 2;
+          const limit = 5;
+          const {
+            body: { comments },
+          } = await request(app).get(
+            `/api/articles/1/comments?p=${page}&limit=${limit}`
+          );
+          expect(comments[0].body).toEqual("Delicious crackerbreads");
+        });
+        test("400: Responds with error if page < 1", async () => {
+          await request(app).get(`/api/articles/1/comments?p=-1`).expect(400);
+        });
+        test("400: Responds with error if limit < 1", async () => {
+          await request(app)
+            .get("/api/articles/1/comments?limit=0")
+            .expect(400);
+        });
+      });
     });
   });
   describe("POST", () => {

@@ -3,6 +3,7 @@ const {
   insertComment,
   deleteComment,
   patchComment,
+  countComments,
 } = require("../models/comments.models");
 const { selectArticle } = require("../models/articles.models");
 
@@ -12,8 +13,13 @@ exports.getComments = async (request, response, next) => {
     if (!article) {
       return next({ status: 404, msg: "Article not found" });
     }
-    const comments = await selectComments(request.params.article_id);
-    response.status(200).send({ comments });
+    const comments = await selectComments(
+      request.params.article_id,
+      request.query.limit,
+      request.query.p
+    );
+    const total_count = await countComments(request.params.article_id);
+    response.status(200).send({ comments, total_count });
   } catch (error) {
     next(error);
   }

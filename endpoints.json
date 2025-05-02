@@ -106,6 +106,18 @@
   },
   "GET /api/articles/:article_id/comments": {
     "description": "serves comments for the article with article_id",
+    "queries": [
+      {
+        "key": "limit",
+        "value": "number of comments to return",
+        "default": 10
+      },
+      {
+        "key": "page",
+        "value": "page number to return",
+        "default": 1
+      }
+    ],
     "exampleResponse": {
       "comments": [
         {
@@ -116,7 +128,8 @@
           "created_at": "2018-05-30T15:59:13.341Z",
           "votes": 0
         }
-      ]
+      ],
+      "total_count": 11
     }
   },
   "POST /api/articles/:article_id/comments": {

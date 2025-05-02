@@ -140,7 +140,7 @@ describe("/api/articles/", () => {
       });
     });
   });
-  describe.only("POST", () => {
+  describe("POST", () => {
     test("200: Responds with an article", async () => {
       const articleToPost = {
         title: "Seafood substitutions are increasing",

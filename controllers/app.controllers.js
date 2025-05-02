@@ -21,6 +21,10 @@ app.use((error, req, response, next) => {
       return response.status(404).send({ msg: error.detail });
     case "22P02":
       return response.status(400).send({ msg: "Bad request" });
+    case "2201X":
+      return response.status(400).send({ msg: error.message });
+    case "2201W":
+      return response.status(400).send({ msg: error.message });
     default:
       next(error);
   }

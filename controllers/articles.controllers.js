@@ -3,6 +3,7 @@ const {
   selectAllArticles,
   updateArticle,
   insertArticle,
+  countArticles,
 } = require("../models/articles.models");
 
 exports.getArticle = async (request, response, next) => {
@@ -26,10 +27,14 @@ exports.getArticles = async (request, response, next) => {
     const articles = await selectAllArticles(
       request.query.sort_by,
       request.query.order,
-      request.query.topic
+      request.query.topic,
+      request.query.limit,
+      request.query.p
     );
+    const total_count = await countArticles();
     return response.status(200).send({
       articles,
+      total_count,
     });
   } catch (error) {
     next(error);

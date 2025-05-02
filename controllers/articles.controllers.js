@@ -4,6 +4,7 @@ const {
   updateArticle,
   insertArticle,
   countArticles,
+  deleteArticle,
 } = require("../models/articles.models");
 
 exports.getArticle = async (request, response, next) => {
@@ -61,6 +62,15 @@ exports.postArticle = async (request, response, next) => {
     const articleToPost = request.body;
     const article = await insertArticle(articleToPost);
     response.status(200).send({ article });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteArticle = async (request, response, next) => {
+  try {
+    await deleteArticle(request.params.article_id);
+    response.status(204).send();
   } catch (error) {
     next(error);
   }

@@ -1,10 +1,23 @@
 const db = require("../db/connection");
-exports.selectComments = async (article_id) => {
+exports.selectComments = async (article_id, limit = 10, page = 1) => {
+  if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
+  }
+  const offset = limit * (page - 1);
+
   const commentsQuery = await db.query(
-    `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
-    [article_id]
+    `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC OFFSET $2 LIMIT $3`,
+    [article_id, offset, limit]
   );
   return commentsQuery.rows;
+};
+
+exports.countComments = async (article_id) => {
+  const commentsCountQuery = await db.query(
+    `SELECT CAST(COUNT(*) AS INTEGER) AS total_count FROM comments WHERE article_id = $1`,
+    [article_id]
+  );
+  return commentsCountQuery.rows[0].total_count;
 };
 
 exports.insertComment = async (article_id, username, body) => {

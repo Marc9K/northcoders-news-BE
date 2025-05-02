@@ -26,6 +26,16 @@
         "key": "topic",
         "value": "topic to filter articles by",
         "default": null
+      },
+      {
+        "key": "limit",
+        "value": "number of articles to return",
+        "default": 10
+      },
+      {
+        "key": "page",
+        "value": "page number to return",
+        "default": 1
       }
     ],
     "exampleResponse": {
@@ -38,7 +48,8 @@
           "votes": 0,
           "comment_count": 6
         }
-      ]
+      ],
+      "total_count": 32
     }
   },
   "POST /api/articles": {

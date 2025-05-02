@@ -19,7 +19,7 @@ describe("/api/articles/", () => {
       const {
         body: { articles },
       } = await request(app).get("/api/articles/").expect(200);
-      expect(articles).toHaveLength(13);
+      expect(articles).toHaveLength(10);
       articles.forEach((article) => {
         expect(article).toMatchObject({
           author: expect.any(String),
@@ -130,6 +130,64 @@ describe("/api/articles/", () => {
         });
         test("404: Responds with Not found if topic does not exist", async () => {
           await request(app).get("/api/articles?topic=aaa").expect(404);
+        });
+      });
+      describe("pagination", () => {
+        test("returns 10 by default", async () => {
+          const {
+            body: { articles },
+          } = await request(app).get("/api/articles/");
+          expect(articles).toHaveLength(10);
+        });
+        test("Responds with the set limit amount", async () => {
+          const limit = 12;
+          const {
+            body: { articles },
+          } = await request(app).get(`/api/articles?limit=${limit}`);
+          expect(articles).toHaveLength(limit);
+        });
+        test("Responds with a;; the articles if limit is higher than total_count", async () => {
+          const limit = 50;
+          const {
+            body: { articles },
+          } = await request(app).get(`/api/articles?limit=${limit}`);
+          expect(articles).toHaveLength(13);
+        });
+        test("Respons with the total_count", async () => {
+          const {
+            body: { total_count },
+          } = await request(app).get(`/api/articles`);
+          expect(total_count).not.toBeUndefined();
+          expect(typeof total_count === "number").toBe(true);
+          expect(!isNaN(total_count)).toBe(true);
+        });
+        test("Responds with the set page and default 10 limit", async () => {
+          const page = 2;
+          const {
+            body: { articles },
+          } = await request(app).get(
+            `/api/articles?p=${page}&sort_by=article_id&order=asc`
+          );
+          expect(articles[0].article_id).toEqual(10 + 1);
+        });
+        test("Responds with the set page and custom limit", async () => {
+          const page = 2;
+          const limit = 5;
+          const {
+            body: { articles },
+          } = await request(app).get(
+            `/api/articles?p=${page}&limit=${limit}&sort_by=article_id&order=asc`
+          );
+          expect(articles).toHaveLength(5);
+          expect(articles[0].article_id).toEqual(5 + 1);
+        });
+        test("400: Responds with error if page < 1", async () => {
+          const page = 0;
+          await request(app).get(`/api/articles?p=${page}`).expect(400);
+        });
+        test("400: Responds with error if limit < 1", async () => {
+          const limit = -2;
+          await request(app).get(`/api/articles?limit=${limit}`).expect(400);
         });
       });
     });

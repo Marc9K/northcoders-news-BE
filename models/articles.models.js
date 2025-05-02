@@ -22,10 +22,21 @@ exports.selectArticle = async (article_id) => {
   return articlesWithIdQuery.rows[0];
 };
 
-exports.selectAllArticles = async (sortByColumn, order, topic) => {
+exports.countArticles = async () => {
+  let sqlQuery = `SELECT CAST(COUNT(*) AS INTEGER) AS total_count FROM articles`;
+  const articlesCountQuery = await db.query(sqlQuery);
+  return Number(articlesCountQuery.rows[0].total_count);
+};
+
+exports.selectAllArticles = async (sortByColumn, order, topic, limit, page) => {
   let sqlOrder = "DESC";
   if (order && order.toLowerCase() === "asc") {
     sqlOrder = "ASC";
+  }
+  limit = limit || 10;
+  page = page || 1;
+  if (isNaN(page) || isNaN(limit)) {
+    return Promise.reject({ status: 400, msg: "Invalid query" });
   }
   if (
     (sortByColumn &&
@@ -47,9 +58,9 @@ exports.selectAllArticles = async (sortByColumn, order, topic) => {
   let sqlArgs = [];
   let sqlQuery = `SELECT 
       articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, 
-      CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count 
+      CAST(COUNT(comments.comment_id) AS INTEGER) AS comment_count
       FROM articles 
-      LEFT JOIN comments ON articles.article_id = comments.article_id 
+      LEFT JOIN comments ON articles.article_id = comments.article_id
       `;
   if (topic) {
     if (!(await selectTopic(topic))) {
@@ -60,7 +71,10 @@ exports.selectAllArticles = async (sortByColumn, order, topic) => {
     sqlArgs.push(topic);
   }
   sqlQuery += `GROUP BY articles.article_id 
-      ORDER BY ${sortByColumn} ${sqlOrder};`;
+      ORDER BY ${sortByColumn} ${sqlOrder}
+      OFFSET ${limit * (page - 1)}
+      LIMIT ${limit}
+      ;`;
 
   const articlesQuery = await db.query(sqlQuery, sqlArgs);
 

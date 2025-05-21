@@ -48,6 +48,7 @@ exports.selectAllArticles = async (sortByColumn, order, topic, limit, page) => {
         "votes",
         "article_img_url",
         "created_at",
+        "comment_count",
       ].includes(sortByColumn)) ||
     (order && !["DESC", "ASC"].includes(order.toUpperCase()))
   ) {
